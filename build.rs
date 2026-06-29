@@ -14,6 +14,11 @@ fn main() {
     cmake_config.define("spoa_use_simde", "ON");
     cmake_config.define("spoa_generate_dispatch", "ON");
 
+    // CMake >= 4.0 removed compatibility with cmake_minimum_required < 3.5;
+    // cpu_features v0.6.0 declares VERSION 3.0, so we must override the policy
+    // floor here until cpu_features is updated upstream.
+    cmake_config.define("CMAKE_POLICY_VERSION_MINIMUM", "3.5");
+
     let out_dir = cmake_config.build();
 
     println!(
