@@ -14,13 +14,16 @@ fn main() {
     cmake_config.define("spoa_use_simde", "ON");
     cmake_config.define("spoa_generate_dispatch", "ON");
 
-    let out_dir = cmake_config.build_target("spoa").build();
+    let out_dir = cmake_config.build();
 
     println!(
         "cargo:rustc-link-search=native={}/build/lib",
         out_dir.display()
     );
     println!("cargo:rustc-link-lib=spoa");
+
+    println!("cargo:rustc-link-search=native={}/build/_deps/cpu_features-build", out_dir.display());
+    println!("cargo:rustc-link-lib=static=cpu_features");
 
     let spoa_include = canonicalize(PathBuf::from("spoa/include")).unwrap();
     CFG.exported_header_dirs.push(&spoa_include);
