@@ -10,9 +10,9 @@ fn main() {
         .define("spoa_build_tests", "OFF");
 
     // Disable -march=native for portable builds
-    if std::env::var("PORTABLE").unwrap_or_default() == "1" {
-        cmake_config.define("spoa_optimize_for_native", "OFF");
-    }
+    cmake_config.define("spoa_optimize_for_native", "OFF");
+    cmake_config.define("spoa_use_simde", "ON");
+    cmake_config.define("spoa_generate_dispatch", "ON");
 
     let out_dir = cmake_config.build_target("spoa").build();
 
