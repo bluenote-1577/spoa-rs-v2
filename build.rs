@@ -21,8 +21,6 @@ fn main() {
         out_dir.display()
     );
     println!("cargo:rustc-link-lib=spoa");
-
-    println!("cargo:rustc-link-search=native={}/build/_deps/cpu_features-build", out_dir.display());
     println!("cargo:rustc-link-lib=static=cpu_features");
 
     let spoa_include = canonicalize(PathBuf::from("spoa/include")).unwrap();
