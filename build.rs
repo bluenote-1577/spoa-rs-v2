@@ -12,7 +12,12 @@ fn main() {
     // Disable -march=native for portable builds
     cmake_config.define("spoa_optimize_for_native", "OFF");
     cmake_config.define("spoa_use_simde", "ON");
-    cmake_config.define("spoa_generate_dispatch", "ON");
+
+    // spoa_generate_dispatch compiles x86-specific dispatch objects (-mavx2, -msse4.1,
+    // -msse2) that are incompatible with ARM targets; only enable on x86.
+    let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
+    let is_x86 = target_arch == "x86" || target_arch == "x86_64";
+    cmake_config.define("spoa_generate_dispatch", if is_x86 { "ON" } else { "OFF" });
 
     // CMake >= 4.0 removed compatibility with cmake_minimum_required < 3.5;
     // cpu_features v0.6.0 declares VERSION 3.0, so we must override the policy
@@ -26,7 +31,10 @@ fn main() {
         out_dir.display()
     );
     println!("cargo:rustc-link-lib=spoa");
-    println!("cargo:rustc-link-lib=static=cpu_features");
+    // cpu_features is only built when generate_dispatch is ON (x86 only)
+    if is_x86 {
+        println!("cargo:rustc-link-lib=static=cpu_features");
+    }
 
     let spoa_include = canonicalize(PathBuf::from("spoa/include")).unwrap();
     CFG.exported_header_dirs.push(&spoa_include);
