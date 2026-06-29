@@ -5,7 +5,6 @@ use std::path::PathBuf;
 fn main() {
     let mut cmake_config = cmake::Config::new("spoa");
     cmake_config
-        .define("spoa_install", "OFF")
         .define("spoa_build_exe", "OFF")
         .define("spoa_build_tests", "OFF");
 
@@ -18,6 +17,13 @@ fn main() {
     let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
     let is_x86 = target_arch == "x86" || target_arch == "x86_64";
     cmake_config.define("spoa_generate_dispatch", if is_x86 { "ON" } else { "OFF" });
+
+    // On x86, spoa_install must be OFF: when generate_dispatch=ON and CpuFeatures
+    // is not pre-installed, spoa's CMakeLists.txt emits FATAL_ERROR if install=ON.
+    // On non-x86, generate_dispatch=OFF so that guard is never reached, and we
+    // need install=ON to ensure cmake generates a Makefile 'install' target
+    // (without any install() calls CMake 4+ omits the target entirely).
+    cmake_config.define("spoa_install", if is_x86 { "OFF" } else { "ON" });
 
     // CMake >= 4.0 removed compatibility with cmake_minimum_required < 3.5;
     // cpu_features v0.6.0 declares VERSION 3.0, so we must override the policy
